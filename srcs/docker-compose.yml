@@ -1,0 +1,127 @@
+services:
+  nginx:
+    image: nginx:amine
+    container_name: nginx
+    build:
+      context: ./requirements/nginx
+    ports:
+      - "443:443"
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - amine_network
+    depends_on:
+      - wordpress
+    restart: always
+
+  mariadb:
+    container_name: mariadb
+    image: mariadb:amine
+    build:
+      context: ./requirements/mariadb
+    env_file:
+      - .env
+    volumes:
+      - mariadb:/var/lib/mysql
+    networks:
+      - amine_network
+    restart: always
+
+  wordpress:
+    container_name: wordpress
+    image: wordpress:amine
+    build:
+      context: ./requirements/wordpress
+    env_file:
+      - .env
+    volumes:
+      - wordpress:/var/www/html
+    depends_on:
+      - mariadb
+    networks:
+      - amine_network
+    restart: always
+
+  website:
+    container_name: website
+    image: website:amine
+    build:
+      context: ./requirements/bonus/website
+    ports:
+      - "8000:8000"
+    networks:
+      - amine_network
+    restart: always
+
+  redis:
+    container_name: redis
+    image: redis:amine
+    build:
+      context: ./requirements/bonus/redis
+    ports:
+      - "6379:6379"
+    networks:
+      - amine_network
+    restart: always
+
+  adminer:
+    container_name: adminer
+    image: adminer:amine
+    build:
+      context: ./requirements/bonus/adminer
+    ports:
+      - "8080:8080"
+    networks:
+      - amine_network
+    depends_on:
+      - mariadb
+    restart: always
+
+  portainer:
+    container_name: portainer
+    image: portainer:amine
+    build:
+      context: ./requirements/bonus/portainer
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - amine_network
+    restart: always
+
+  ftp:
+    container_name: ftp
+    image: ftp:amine
+    build:
+      context: ./requirements/bonus/ftp
+    env_file:
+      - .env
+    ports:
+      - "21:21"
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - amine_network
+    restart: always
+
+volumes:
+  wordpress:
+    driver: local
+    driver_opts:
+      type: none
+      device: /Users/b/Desktop/incep/data/wordpress
+      o: bind
+  mariadb:
+    driver: local
+    driver_opts:
+      type: none
+      device: /Users/b/Desktop/incep/data/mariadb
+      o: bind
+  portainer_data:
+    driver: local
+
+networks:
+  amine_network:
+    driver : bridge

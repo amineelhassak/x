@@ -1,0 +1,15 @@
+FROM debian:bullseye
+
+RUN apt-get update && apt-get install -y \
+    php7.4 \
+    php7.4-mysql \
+    adminer \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p /var/www/html
+
+RUN cp /usr/share/adminer/adminer.php /var/www/html/index.php
+
+WORKDIR /var/www/html
+
+CMD ["php", "-S", "0.0.0.0:8080", "-t", "/var/www/html"]
